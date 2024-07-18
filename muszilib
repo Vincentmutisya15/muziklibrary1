@@ -1,0 +1,211 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class Song:
+    def __init__(self, title, artist, album, duration):
+        self.title = title
+        self.artist = artist
+        self.album = album
+        self.duration = duration
+        self.rating = 0
+        self.reviews = []
+
+    def rate(self, rating):
+        self.rating = rating
+
+    def add_review(self, review):
+        self.reviews.append(review)
+
+class Artist:
+    def __init__(self, name):
+        self.name = name
+        self.albums = []
+
+    def add_album(self, album):
+        self.albums.append(album)
+
+class Album:
+    def __init__(self, title, artist, release_year):
+        self.title = title
+        self.artist = artist
+        self.release_year = release_year
+        self.songs = []
+        self.rating = 0
+        self.reviews = []
+
+    def add_song(self, song):
+        self.songs.append(song)
+
+    def rate(self, rating):
+        self.rating = rating
+
+    def add_review(self, review):
+        self.reviews.append(review)
+
+class Playlist:
+    def __init__(self, name):
+        self.name = name
+        self.songs = []
+
+    def add_song(self, song):
+        self.songs.append(song)
+
+    def remove_song(self, song_title):
+        self.songs = [song for song in self.songs if song.title != song_title]
+
+    def display(self):
+        print(f"Playlist: {self.name}")
+        for song in self.songs:
+            print(f"Title: {song.title}, Artist: {song.artist}, Album: {song.album}, Duration: {song.duration}")
+
+class MusicLibrary:
+    def __init__(self):
+        self.songs = []
+        self.artists = []
+        self.albums = []
+        self.playlists = []
+
+    def add_song(self, song):
+        self.songs.append(song)
+
+    def add_artist(self, artist):
+        self.artists.append(artist)
+
+    def add_album(self, album):
+        self.albums.append(album)
+
+    def create_playlist(self, name):
+        playlist = Playlist(name)
+        self.playlists.append(playlist)
+        return playlist
+
+    def search_songs(self, title=None, artist=None, album=None):
+        results = self.songs
+        if title:
+            results = [song for song in results if title.lower() in song.title.lower()]
+        if artist:
+            results = [song for song in results if artist.lower() in song.artist.lower()]
+        if album:
+            results = [song for song in results if album.lower() in song.album.lower()]
+        return results
+
+    def search_artists(self, name):
+        return [artist for artist in self.artists if name.lower() in artist.name.lower()]
+
+    def search_albums(self, title):
+        return [album for album in self.albums if title.lower() in album.title.lower()]
+
+def add_artist():
+    name = artist_name_var.get()
+    artist = Artist(name)
+    library.add_artist(artist)
+    messagebox.showinfo("Success", f"Artist {name} added to the library.")
+
+def add_album():
+    title = album_title_var.get()
+    artist_name = album_artist_var.get()
+    release_year = int(album_year_var.get())
+
+    artist = next((artist for artist in library.artists if artist.name == artist_name), None)
+    if not artist:
+        messagebox.showerror("Error", "Artist not found in the library.")
+        return
+
+    album = Album(title, artist.name, release_year)
+    artist.add_album(album)
+    library.add_album(album)
+    messagebox.showinfo("Success", f"Album {title} by {artist_name} added to the library.")
+
+def add_song():
+    title = song_title_var.get()
+    artist_name = song_artist_var.get()
+    album_title = song_album_var.get()
+    duration = song_duration_var.get()
+
+    album = next((album for album in library.albums if album.title == album_title and album.artist == artist_name), None)
+    if not album:
+        messagebox.showerror("Error", "Album not found in the library.")
+        return
+
+    song = Song(title, artist_name, album_title, duration)
+    album.add_song(song)
+    library.add_song(song)
+    messagebox.showinfo("Success", f"Song {title} by {artist_name} added to the library.")
+
+def add_review():
+    song_title = review_song_title_var.get()
+    review_text = review_text_var.get()
+
+    song = next((song for song in library.songs if song.title == song_title), None)
+    if not song:
+        messagebox.showerror("Error", "Song not found in the library.")
+        return
+
+    song.add_review(review_text)
+    messagebox.showinfo("Success", f"Review added to the song {song.title}.")
+
+library = MusicLibrary()
+
+# Adding Cardi B songs and albums for demonstration
+cardi_b = Artist("Cardi B")
+library.add_artist(cardi_b)
+
+invasion_of_privacy = Album("Invasion of Privacy", "Cardi B", 2018)
+cardi_b.add_album(invasion_of_privacy)
+library.add_album(invasion_of_privacy)
+
+i_like_it = Song("I Like It", "Cardi B", "Invasion of Privacy", "4:13")
+invasion_of_privacy.add_song(i_like_it)
+library.add_song(i_like_it)
+
+bodak_yellow = Song("Bodak Yellow", "Cardi B", "Invasion of Privacy", "3:44")
+invasion_of_privacy.add_song(bodak_yellow)
+library.add_song(bodak_yellow)
+
+# GUI setup
+root = tk.Tk()
+root.title("Music Library Management System")
+
+# Artist Section
+tk.Label(root, text="Artist Name").grid(row=0, column=0)
+artist_name_var = tk.StringVar()
+tk.Entry(root, textvariable=artist_name_var).grid(row=0, column=1)
+tk.Button(root, text="Add Artist", command=add_artist).grid(row=0, column=2)
+
+# Album Section
+tk.Label(root, text="Album Title").grid(row=1, column=0)
+tk.Label(root, text="Artist Name").grid(row=1, column=2)
+tk.Label(root, text="Release Year").grid(row=1, column=4)
+album_title_var = tk.StringVar()
+album_artist_var = tk.StringVar()
+album_year_var = tk.StringVar()
+tk.Entry(root, textvariable=album_title_var).grid(row=1, column=1)
+tk.Entry(root, textvariable=album_artist_var).grid(row=1, column=3)
+tk.Entry(root, textvariable=album_year_var).grid(row=1, column=5)
+tk.Button(root, text="Add Album", command=add_album).grid(row=1, column=6)
+
+# Song Section
+tk.Label(root, text="Song Title").grid(row=2, column=0)
+tk.Label(root, text="Artist Name").grid(row=2, column=2)
+tk.Label(root, text="Album Title").grid(row=2, column=4)
+tk.Label(root, text="Duration").grid(row=2, column=6)
+song_title_var = tk.StringVar()
+song_artist_var = tk.StringVar()
+song_album_var = tk.StringVar()
+song_duration_var = tk.StringVar()
+tk.Entry(root, textvariable=song_title_var).grid(row=2, column=1)
+tk.Entry(root, textvariable=song_artist_var).grid(row=2, column=3)
+tk.Entry(root, textvariable=song_album_var).grid(row=2, column=5)
+tk.Entry(root, textvariable=song_duration_var).grid(row=2, column=7)
+tk.Button(root, text="Add Song", command=add_song).grid(row=2, column=8)
+
+# Review Section
+tk.Label(root, text="Review Song Title").grid(row=3, column=0)
+tk.Label(root, text="Review Text").grid(row=3, column=2)
+review_song_title_var = tk.StringVar()
+review_text_var = tk.StringVar()
+tk.Entry(root, textvariable=review_song_title_var).grid(row=3, column=1)
+tk.Entry(root, textvariable=review_text_var).grid(row=3, column=3)
+tk.Button(root, text="Add Review", command=add_review).grid(row=3, column=4)
+
+root.mainloop()
